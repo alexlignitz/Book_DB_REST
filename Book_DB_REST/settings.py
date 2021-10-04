@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'sorl.thumbnail',
     'django_cleanup.apps.CleanupConfig',
+    'django_filters',
 ]
 
 MIDDLEWARE = [

@@ -1,10 +1,4 @@
 from django.db import models
-from sorl.thumbnail import ImageField
-from django.core.files import File
-from urllib.request import urlopen
-from tempfile import NamedTemporaryFile
-
-from Book_DB_REST import settings
 
 
 class Book(models.Model):
@@ -14,13 +8,13 @@ class Book(models.Model):
     categories = models.CharField(max_length=280, null=True)
     average_rating = models.PositiveIntegerField(null=True)
     ratings_counts = models.PositiveIntegerField(null=True)
-    thumbnail = ImageField(upload_to=settings.MEDIA_ROOT, null=True)
+    thumbnail = models.URLField(null=True)
 
     @classmethod
     def create_book(cls, books):
         for book in books:
             title = book['volumeInfo']['title']
-            authors = book['volumeInfo'].setdefault('authors', 'Unknown')
+            authors = book['volumeInfo'].setdefault('authors', ['Unknown'])
             author_lst = []
             for author in authors:
                 author_lst.append(author)
@@ -41,21 +35,13 @@ class Book(models.Model):
 
             try:
                 image_info = book['volumeInfo']['imageLinks']
-                thumbnail_url = image_info['thumbnail']
-                img_temp = NamedTemporaryFile(delete=True)
-                img_temp.write(urlopen(thumbnail_url).read())
-                img_temp.flush()
-                b.thumbnail.save(f"image_{b.id}", File(img_temp))
+                b.thumbnail = image_info['thumbnail']
+                b.save()
             except:
                 pass
             b.save()
 
 
-def create_db(books):
-    Book.create_book(books)
-
-
 def clear_db():
     for book in Book.objects.all():
         book.delete()
-
