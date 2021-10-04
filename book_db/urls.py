@@ -6,11 +6,11 @@ from rest_framework.routers import DefaultRouter
 from book_db.views import BookListViewSet
 
 router = DefaultRouter()
-router.register('image', BookListViewSet, basename='image')
+router.register('books', BookListViewSet, basename='books')
 
 urlpatterns = [
     path('viewset/', include(router.urls)),
-    path('viewset/<str:id>/', include(router.urls)),
+    path('viewset/<int:pk>/', include(router.urls)),
 ]
 
 if settings.DEBUG:
