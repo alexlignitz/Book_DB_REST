@@ -1,2 +1,2 @@
 # Book_DB_REST
-Application fetching data from external API and processing it 
+Application fetching and processing data from external API
