@@ -4,39 +4,14 @@ from django.core.files import File
 from urllib.request import urlopen
 from tempfile import NamedTemporaryFile
 
-
-# class Author(models.Model):
-#     name = models.CharField(max_length=280)
-#
-#     @classmethod
-#     def create_author(cls, books):
-#         for book in books:
-#             if book['volumeInfo']['authors']:
-#                 for author in book['volumeInfo']['authors']:
-#                     Author.objects.create(
-#                         name=author
-#                     )
-#
-#
-# class Category(models.Model):
-#     name = models.CharField(max_length=100)
-#
-#     @classmethod
-#     def create_category(cls, books):
-#         for book in books:
-#             if book['volumeInfo']['categories']:
-#                 for category in book['volumeInfo']['categories']:
-#                     Category.objects.create(
-#                         name=category
-#                     )
 from Book_DB_REST import settings
 
 
 class Book(models.Model):
     title = models.CharField(max_length=280)
-    authors = models.CharField(max_length=280, default='')
+    authors = models.CharField(max_length=100, null=True)
     published_date = models.CharField(max_length=20, null=True)
-    categories = models.CharField(max_length=280, default='')
+    categories = models.CharField(max_length=280, null=True)
     average_rating = models.PositiveIntegerField(null=True)
     ratings_counts = models.PositiveIntegerField(null=True)
     thumbnail = ImageField(upload_to=settings.MEDIA_ROOT, null=True)
@@ -45,15 +20,18 @@ class Book(models.Model):
     def create_book(cls, books):
         for book in books:
             title = book['volumeInfo']['title']
-            authors = book['volumeInfo'].setdefault('authors', '')
+            authors = book['volumeInfo'].setdefault('authors', 'Unknown')
+            author_lst = []
+            for author in authors:
+                author_lst.append(author)
             published_date = book['volumeInfo'].setdefault('publishedDate', '')
-            categories = book['volumeInfo'].setdefault('categories', '')
-            average_rating = book['volumeInfo'].setdefault('averageRating', None)
-            ratings_counts = book['volumeInfo'].setdefault('ratingsCounts', None)
+            categories = book['volumeInfo'].setdefault('categories', 'No categories assigned')
+            average_rating = book['volumeInfo'].setdefault('averageRating', 0)
+            ratings_counts = book['volumeInfo'].setdefault('ratingsCounts', 0)
 
             b = Book(
                 title=title,
-                authors=authors,
+                authors=author_lst,
                 published_date=published_date,
                 categories=categories,
                 average_rating=average_rating,
@@ -74,18 +52,10 @@ class Book(models.Model):
 
 
 def create_db(books):
-# Author.create_author(books)
-# Category.create_category(books)
     Book.create_book(books)
 
 
 def clear_db():
-    # for author in Author.objects.all():
-    #     author.delete()
-    #
-    # for category in Category.objects.all():
-    #     category.delete()
-
     for book in Book.objects.all():
         book.delete()
 
