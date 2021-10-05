@@ -1,12 +1,16 @@
 import requests
+
 from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from book_db.models import clear_db, Book
 from book_db.serializers import BookSerializer
 
+clear_db()
+
 
 class BookListViewSet(viewsets.ModelViewSet):
-    clear_db()
     api_url = 'https://www.googleapis.com/books/v1/volumes?q=Hobbit'
     response = requests.get(api_url)
     books_json = response.json()['items']
@@ -35,3 +39,21 @@ class BookListViewSet(viewsets.ModelViewSet):
                 queryset = Book.objects.all().order_by('-published_date')
         return queryset
 
+
+class LibraryView(APIView):
+    """
+    This view has no GET method, the POST method allows to fetch the data from external API
+    wit the dict {"q": $"lookup_word"} and save it to the existing database with books.
+    """
+    api_url = 'https://www.googleapis.com/books/v1/volumes?q=war'
+    response = requests.get(api_url)
+    books_json = response.json()['items']
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        if data['q'] == 'war':
+            Book.create_book(self.books_json)
+            message = 'Database updated'
+        else:
+            message = 'Invalid query'
+        return Response({'success': message})
