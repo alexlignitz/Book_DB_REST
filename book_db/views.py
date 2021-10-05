@@ -11,6 +11,10 @@ clear_db()
 
 
 class BookListViewSet(viewsets.ModelViewSet):
+    """
+    List of books fetched from the external API with query parameter "Hobbit".
+    """
+
     api_url = 'https://www.googleapis.com/books/v1/volumes?q=Hobbit'
     response = requests.get(api_url)
     books_json = response.json()['items']
@@ -24,6 +28,7 @@ class BookListViewSet(viewsets.ModelViewSet):
         the view will show filtered or sorted list.
         Otherwise it will show the full list of books sorted by object id.
         """
+
         queryset = Book.objects.all()
         year = self.request.query_params.get('published_date')
         author = self.request.query_params.get('author')
@@ -43,16 +48,17 @@ class BookListViewSet(viewsets.ModelViewSet):
 class LibraryView(APIView):
     """
     This view has no GET method, the POST method allows to fetch the data from external API
-    wit the dict {"q": $"lookup_word"} and save it to the existing database with books.
+    with the dict {"q": $"lookup_word"} and save it to the existing database with books.
     """
-    api_url = 'https://www.googleapis.com/books/v1/volumes?q=war'
-    response = requests.get(api_url)
-    books_json = response.json()['items']
 
     def post(self, request, *args, **kwargs):
         data = request.data
-        if data['q'] == 'war':
-            Book.create_book(self.books_json)
+        if data['q']:
+            keyword = data['q']
+            api_url = f"https://www.googleapis.com/books/v1/volumes?q={keyword}"
+            response = requests.get(api_url)
+            books_json = response.json()['items']
+            Book.create_book(books_json)
             message = 'Database updated'
         else:
             message = 'Invalid query'
