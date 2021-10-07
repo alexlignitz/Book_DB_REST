@@ -60,6 +60,7 @@ class LibraryView(APIView):
             books_json = response.json()['items']
             Book.create_book(books_json)
             message = 'Database updated'
+            return Response({'success': message})
         else:
             message = 'Invalid query'
-        return Response({'success': message})
+            return Response({'error': message})
